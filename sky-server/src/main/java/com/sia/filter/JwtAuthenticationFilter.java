@@ -64,9 +64,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
             // 3. 从令牌获取用户名
              String username = jwtUtils.getUsernameFromToken(token);
-            // 4. 加载用户信息
-            Employee employee= employeeService.lambdaQuery().eq(Employee::getUsername, username).one();
-            UserDetails userDetails=employeeService.mapToUserDetails(employee) ;
 
             // 2. 验证令牌是否过期
             Boolean b = stringRedisTemplate.opsForSet().isMember(RedisConstant.TOKEN_USER+username, token);
@@ -78,8 +75,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.flushBuffer();
                 return;
             }
-
-
+            UserDetails userDetails=employeeService.loadUserByUsername(username);
+            // 4. 加载用户信息
+            Employee employee= employeeService.lambdaQuery().eq(Employee::getUsername, username).one();
             if (username == null) {
                 throw new JwtException("Invalid username in JWT token");
             }
@@ -88,6 +86,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (userDetails == null) {
                 throw new JwtException("User not found");
             }
+
 
             // 5. 构建认证对象并设置到Security上下文
             UsernamePasswordAuthenticationToken authentication =

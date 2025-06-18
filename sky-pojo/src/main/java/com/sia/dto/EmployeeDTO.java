@@ -15,7 +15,7 @@ public class EmployeeDTO implements Serializable {
     private String id;
 
     private String username;
-    @NotNull
+    @NotNull(message = "名字不能为空")
     private String name;
     @Pattern(regexp = "^1(3\\d|4[5-9]|5[0-35-9]|66|7[0-8]|8\\d|9[89])\\d{8}$", message = "手机号格式错误")
     private String phone;

@@ -1,10 +1,12 @@
 package com.sia.controller.admin;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.sia.Utils.JwtUtil;
 import com.sia.constant.RedisConstant;
 import com.sia.dto.EmployeeDTO;
 import com.sia.dto.EmployeeLoginDTO;
+import com.sia.dto.EmployeePageQueryDTO;
 import com.sia.entity.Employee;
 import com.sia.result.Result;
 import com.sia.service.EmployeeService;
@@ -12,6 +14,7 @@ import com.sia.vo.EmployeeLoginVO;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -50,10 +53,22 @@ public class EmployeeController {
     public void init() {
         System.out.println(authenticationManager);
     }
+    @GetMapping("/page")
+    public Result page(@Valid EmployeePageQueryDTO pageQueryDTO) {
+        return employeeService.getPage(pageQueryDTO);
+    }
     @PostMapping("/add")
     public Result addEmployee(@RequestBody @Valid EmployeeDTO employeeDTO) {
         return employeeService.addEmployee(employeeDTO);
 
+    }
+    @PostMapping("/status/{status}")
+    public Result updateStatus(@PathVariable int status, @NotBlank(message = "员工ID不能为空") String id) {
+        if (status != 0 && status != 1) {
+            return Result.error("状态不合法");
+        }
+        boolean b = employeeService.lambdaUpdate().eq(Employee::getId, id).set(Employee::getStatus, status).update();
+        return b ? Result.success("修改成功") : Result.error("用户不存在");
     }
     @PostMapping("/login")
     public Result login(@RequestBody EmployeeLoginDTO employeeLoginDTO) {
@@ -94,7 +109,7 @@ public class EmployeeController {
         return Result.success("登出成功");
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public Map<String, Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
         StringBuilder errors = new StringBuilder();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
@@ -105,6 +120,14 @@ public class EmployeeController {
         result.put("code", "0");
         result.put("data", null);
         result.put("msg", errors.toString());
+        return result;
+    }
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Map<String, Object> handleConstraintViolationExceptions(ConstraintViolationException ex) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", "0");
+        result.put("data", null);
+        result.put("msg", ex.getMessage());
         return result;
     }
 }

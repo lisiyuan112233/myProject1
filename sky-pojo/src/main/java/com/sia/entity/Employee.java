@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 /**
@@ -58,12 +59,14 @@ public class Employee {
      * 创建时间
      */
     @TableField(value = "create_time",fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy年MM月dd日 HH:mm:ss")
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
     @TableField(value = "update_time",fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy年MM月dd日 HH:mm:ss")
     private LocalDateTime updateTime;
 
     /**
