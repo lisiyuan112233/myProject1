@@ -1,0 +1,20 @@
+sky:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    host: localhost
+    port: 3306
+    database: ordersystem
+    username: root
+    password: 123456
+spring:
+# application.properties
+  server:
+    servlet:
+      session:
+        cookie:
+          same-site: None
+          secure: true
+  data:
+    redis:
+      host: 192.168.200.130
+      port: 6379
